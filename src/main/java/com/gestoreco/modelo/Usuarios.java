@@ -1,9 +1,8 @@
 package com.gestoreco.modelo;
 
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 import java.util.List;
 
-import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -26,15 +25,18 @@ public class Usuarios {
 
 	 @Column(unique = true, nullable = false)
 	 private String email;
+	 
+	 @Column(unique = true, nullable = false)
+	 private String usuario;
 
 	 @Column(name = "clave", nullable = false)
 	 private String clave;
 
 	 @Column(name = "fecha_registro")
-	 private LocalDateTime fechaRegistro;
+	 private LocalDate fechaRegistro;
 	 
 	 
-	 @OneToMany(mappedBy = "usuario", cascade = CascadeType.ALL)
+	 @OneToMany(mappedBy = "usuario")
 	 private List<Movimientos> movimientos;
 
 }

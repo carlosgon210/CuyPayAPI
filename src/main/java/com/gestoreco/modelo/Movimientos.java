@@ -20,11 +20,9 @@ import lombok.Data;
 public class Movimientos {
 	  	@Id
 	    @GeneratedValue(strategy = GenerationType.IDENTITY)
-	    private Long id;
+	    private int id;
 
-	    @ManyToOne
-	    @JoinColumn(name = "usuarioId", nullable = false)
-	    private int usuarioId;
+	    private int usuario;
 
 	    @Column(nullable = false, precision = 10, scale = 2)
 	    private BigDecimal monto;

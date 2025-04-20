@@ -1,6 +1,6 @@
 package com.gestoreco.servicio.impl;
 
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
@@ -25,18 +25,29 @@ public class UsuarioServiceImpl implements UsuarioService {
 	public ResponseEntity<Map<String, Object>> registrar(DtoUsuarioRegistroo dtoRegistrar) {
 		
 		Map<String, Object> res= new HashMap<>();
-		if(dtoRegistrar.getClave1()!=dtoRegistrar.getClave2()) {
+		if(!dtoRegistrar.getClave1().equals(dtoRegistrar.getClave2())) {
 			res.put("mensaje", "Error las claves no son iguales");
+			res.put("status",HttpStatus.CONFLICT);
+			return ResponseEntity.status(HttpStatus.CONFLICT).body(res);
+		}
+		if(userRepo.existsByUsuario(dtoRegistrar.getUsuario())) {
+			res.put("mensaje", "Usuario ya esta registrado");
+			res.put("status",HttpStatus.CONFLICT);
+			return ResponseEntity.status(HttpStatus.CONFLICT).body(res);
+		}
+		if(userRepo.existsByEmail(dtoRegistrar.getEmail())) {
+			res.put("mensaje", "El correo ya esta siendo usado");
 			res.put("status",HttpStatus.CONFLICT);
 			return ResponseEntity.status(HttpStatus.CONFLICT).body(res);
 		}
 		else {
 			Usuarios u= new Usuarios();
-			u.setNombre(dtoRegistrar.getNombre()+dtoRegistrar.getApellidos());
+			u.setNombre(dtoRegistrar.getNombre()+" "+dtoRegistrar.getApellidos());
 			u.setEmail(dtoRegistrar.getEmail());
+			u.setUsuario(dtoRegistrar.getUsuario());
 			u.setClave(dtoRegistrar.getClave1());
-			u.setFechaRegistro(LocalDateTime.now());
-		
+			u.setFechaRegistro(LocalDate.now());
+			userRepo.save(u);
 			res.put("mensaje", "Usuario Registrado");
 			res.put("status",HttpStatus.OK);
 			res.put("usuario", u);
@@ -47,13 +58,19 @@ public class UsuarioServiceImpl implements UsuarioService {
 	@Override
 	public ResponseEntity<Map<String, Object>> inicioSecion(DtoUsuarioSession dtoSesion) {
 		Map<String, Object> res= new HashMap<>();
-		if(!userRepo.existsByEmail(dtoSesion.getUsuario())) {
+		Usuarios u = userRepo.findByUsuario(dtoSesion.getUsuario());
+		System.out.println(dtoSesion.getClave()+"="+u.getClave());
+		if(!userRepo.existsByUsuario(dtoSesion.getUsuario())) {
 			res.put("mensaje", "No se encontro el Usuario");
 			res.put("status",HttpStatus.CONFLICT);
 			return ResponseEntity.status(HttpStatus.CONFLICT).body(res);
 		}
+		if(!dtoSesion.getClave().equals(u.getClave())) {
+			res.put("mensaje", "Contraseña Incorrecta");
+			res.put("status",HttpStatus.CONFLICT);
+			return ResponseEntity.status(HttpStatus.CONFLICT).body(res);
+		}
 		else {
-			Optional<Usuarios> u= userRepo.findByUsuario(dtoSesion.getUsuario());
 			res.put("mensaje", "Inicio Sesion");
 			res.put("status",HttpStatus.OK);
 			res.put("usuario", u);
